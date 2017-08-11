@@ -7,26 +7,35 @@ int nfds;
 #define SCALE (160) //Trigger nested exception
 //#define SCALE (1) //Successfully executed
 #define STKSIZE (2048*SCALE)
+#define PGSIZE (4096)
 void real_one(int sig) {
     char STACK[STKSIZE];
-    for(int i = 1; i < STKSIZE ; i++) {
-        STACK[i] = i;
-        STACK[STKSIZE-i] = STACK[i];
-    }
+    int pgi = 0;
     switch (sig) {
         case SIGUSR2:
+            printf("PG:%d, STACK addr:%p\n", pgi++, &STACK[STKSIZE]);
+            for(int i = STKSIZE-1; i >= 0 ; i--) {
+                STACK[i] = i;
+                STACK[STKSIZE-i] = STACK[i];
+                if(!(i%PGSIZE)) {
+                    printf("PG:%d, STACK addr:%p\n", pgi++, &STACK[i]);
+                }
+            }
             puts("EXECUTING");
             break;
     }
 }
 void sig_handler(int sig) {
     puts("SIG IN");
-    real_one(sig);
+    switch (sig) {
+        case SIGUSR2:
+            real_one(sig);
+    }
 }
 int exec_io(int fd) {
    int ret;
-   ret = child_func(fd);
-//   ret = echo(fd);
+//   ret = child_func(fd);
+   ret = echo(fd);
    return ret;
 }
 int main(int argc, char* argv[]) {
@@ -65,6 +74,7 @@ printf("%d\n", FD_SETSIZE);
     nfds = msock+1;
     FD_ZERO(&afds);
     FD_SET(msock, &afds);
+    char xbool = 1;
 
     while (1) {
 
@@ -94,8 +104,14 @@ printf("%d\n", FD_SETSIZE);
 
 //                TRACE_PRINT("\t-------->fd:%d In<-------------", fd);
 
+                kill(getpid(), SIGUSR2);
+#if 0
+            if(xbool) {
                 puts("send signal....");
                 kill(getpid(), SIGUSR2);
+                xbool = !xbool;
+            }
+#endif
                 if(exec_io(fd) > 0) continue;
 
 //                TRACE_PRINT("\t-------->fd:%d Out<-------------", fd);

@@ -242,10 +242,6 @@ int echo(int fd)
     if (cc <= 0)
         return cc;
 
-    for(int i = 0; i < cc ;i++)
-        printf("%d,", buf[i]);
-
-    puts("");
     printf("cc:%d, %s\n", cc, buf);
 
     cc = write(fd, buf, cc);
