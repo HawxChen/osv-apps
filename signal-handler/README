@@ -1,3 +1,9 @@
 This is a simple http 1.1 server with backdoor
 
-http://ip:port/exec/ls
+./script/run.py -vn -c1
+
+
+#curl http://ip:port/exec/ls
+or
+#nc localhost 11111
+ key in characters and then enter.
